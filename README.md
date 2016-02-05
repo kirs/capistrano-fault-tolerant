@@ -1,10 +1,10 @@
-# Capistrano::Fault::Tolerant
+# Fault Tolerant Capistrano
 
-Imagine if you have hundreds of hosts, and you'd like to allow one command to fail on `1%` of your hosts.
-The gem brings fault tolerant commands to Capistrano DSL.
+Imagine you have hundreds of hosts in Capistrano, and you'd like to allow specific command to fail on `5%` of your hosts.
+The gem brings fault tolerant commands to Capistrano DSL:
 
 ```ruby
-on roles(:web), failure_tolerance: 0.3 do
+on roles(:web), failure_tolerance: 0.05 do
   within release_path do
     execute "./script-that-may-fail-sometimes"
   end
@@ -39,7 +39,7 @@ Add to `Capfile`:
 require 'capistrano-fault-tolerant'
 ```
 
-Now you can use `failure_tolerance` option in the command:
+Now you can use `failure_tolerance` option with any command:
 
 ```ruby
 on roles(:web), failure_tolerance: 0.05 do
@@ -49,10 +49,11 @@ on roles(:web), failure_tolerance: 0.05 do
 end
 ```
 
-*If less than 5% of `web` hosts will fail, Capistrano will continue the deploy.
-When more than 5% of `web` hosts will fail, Capistrano will stop with an exception as it usually does with failed commands.*
+**If less than 5% of `web` hosts will fail, Capistrano will continue the deploy.
 
-The gem can also call a callback on failed host:
+When more than 5% of `web` hosts will fail, Capistrano will stop with an exception as it usually does with failed commands.**
+
+The gem can also call a callback on new failed host:
 
 ```
 # config/deploy.rb
