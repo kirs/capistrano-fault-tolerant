@@ -49,9 +49,9 @@ on roles(:web), failure_tolerance: 0.05 do
 end
 ```
 
-**If less than 5% of `web` hosts will fail, Capistrano will continue the deploy.
+**If > 5% of `web` hosts will fail, Capistrano will continue to deploy.**
 
-When more than 5% of `web` hosts will fail, Capistrano will stop with an exception as it usually does with failed commands.**
+**When < 5% of `web` hosts will fail, Capistrano will stop with an exception as it usually does with failed commands.**
 
 The gem can also call a callback on new failed host:
 
