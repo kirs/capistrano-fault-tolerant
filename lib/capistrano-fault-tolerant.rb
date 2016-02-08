@@ -1,8 +1,33 @@
 require 'sshkit'
 require 'thread'
-require_relative 'capistrano-fault-tolerant/failed_hosts'
 
 module CapistranoFaultTolerant
+  class FailedHosts
+    TooManyHostsFailedError = Class.new(StandardError)
+
+    def initialize(total_hosts, tolerance)
+      @max_hosts_to_fail = (total_hosts * tolerance).floor
+      @hosts = Set.new
+    end
+
+    attr_reader :hosts
+
+    def push(host)
+      if @hosts.size >= @max_hosts_to_fail
+        raise TooManyHostsFailedError, "the limit of failed hosts is full. Failed hosts: #{@hosts.to_a.join("\n")}"
+      end
+
+      @hosts << host
+      if CapistranoFaultTolerant.on_failed_host
+        CapistranoFaultTolerant.on_failed_host.call(host)
+      end
+    end
+
+    def include?(host)
+      @hosts.include?(host)
+    end
+  end
+
   def self.on_failed_host
     @on_failed_host
   end
@@ -22,11 +47,7 @@ module CapistranoFaultTolerant
             b = SSHKit.config.backend.new(h)
             b.error "Exception while executing #{host.user ? "as #{host.user}@" : "on host "}#{host}: #{e.message}"
 
-            # returns false if there are too many failed servers
-            # raise back
-            unless options[:failed_hosts].push(h)
-              raise
-            end
+            options[:failed_hosts].push(h)
           end
         end
       end
